@@ -38,7 +38,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: trained-model
-          path: 06-cicd/
+          path: .
 
       - name: Verify downloaded artifact
         run: ls -R 06-cicd
@@ -53,6 +53,8 @@ jobs:
           docker run -d -p 9696:9696 -e PORT=9696 --name nyc-app nyc-duration-app
           sleep 20
           curl -f http://localhost:9696/health || (docker logs nyc-app && exit 1)
+          # Assert model is actually loaded, not just the server running
+          curl -s http://localhost:9696/health | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['model_loaded'], f'Model not loaded: {d}'"
           pytest -q 06-cicd/test_api.py
           docker stop nyc-app && docker rm nyc-app
 
