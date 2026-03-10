@@ -84,3 +84,10 @@ jobs:
           # Push both tags
           docker push "$IMAGE_ID:$VERSION"
           docker push "$IMAGE_ID:latest"
+
+      - name: Verify pushed image has model
+        run: |
+          IMAGE_ID="ghcr.io/${{ github.repository }}"
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[:upper:]' '[:lower:]')
+          docker pull "$IMAGE_ID:latest"
+          docker run --rm "$IMAGE_ID:latest" sh -c 'test -f /app/run_id.txt && echo "run_id.txt OK" && test -d /app/models/model && echo "models/model OK"'
