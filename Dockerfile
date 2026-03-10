@@ -4,12 +4,12 @@ RUN apt-get update -qq && apt-get install -y -qq unzip && rm -rf /var/lib/apt/li
 
 WORKDIR /app
 
-# Copy and install dependencies
-COPY requirements.txt .
+# Copy and install dependencies from 06-cicd/
+COPY 06-cicd/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code and pre-downloaded model (from workflow)
-COPY . .
+COPY 06-cicd/ .
 
 # Unzip model if artifact uploaded it as a zip
 RUN if [ -f models/model.zip ]; then \
@@ -17,4 +17,4 @@ RUN if [ -f models/model.zip ]; then \
     fi && echo "Model ready in /app/models"
 
 EXPOSE 9696
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "9696"]
+CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-9696}"]
